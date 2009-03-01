@@ -8,7 +8,8 @@
   </parent>
   
   <artifactId>cppunit</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Hudson cppunit plugin</name>
+  <url>http://hudson.gotdns.com/wiki/display/HUDSON/Cppunit+Plugin</url>
 </project>
