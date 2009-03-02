@@ -9,19 +9,11 @@ import hudson.util.IOException2;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
@@ -37,27 +29,24 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
 
     public static final String JUNIT_REPORTS_PATH = "temporary-junit-reports";
 
-    public static final String JUNIT_FILE_POSTFIX = ".xml";
-    public static final String JUNIT_FILE_PREFIX = "TEST-";
-
-    public static final String CPPUNIT_TO_JUNIT_XSL = "cppunit-to-junit.xsl";
-
-    private transient boolean xslIsInitialized;
-    private transient Transformer cppunitTransformer;    
+    private CppUnitTransformer reportTransformer;
     
     // Build related objects
     private final BuildListener listener;
     private final String testResultsPattern;
 
-    public CppUnitArchiver(BuildListener listener, String testResults) throws TransformerException {
+    public CppUnitArchiver(BuildListener listener, String testResults, CppUnitTransformer reportTransformer) throws TransformerException {
         this.listener = listener;
         this.testResultsPattern = testResults;
+        this.reportTransformer=reportTransformer;
     }
 
     /** {@inheritDoc} */
     public Boolean invoke(File ws, VirtualChannel channel) throws IOException {
-        Boolean retValue = Boolean.TRUE;
+        
+    	boolean retValue = false;
         String[] cppunitFiles = findCppUnitReports(ws);
+        
         if (cppunitFiles.length > 0) {
             File junitOutputPath = new File(ws, JUNIT_REPORTS_PATH);
             junitOutputPath.mkdirs();
@@ -67,7 +56,7 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
                 FileInputStream fileStream = new FileInputStream(fileCppunitReport);
                 String fileCppunitReportName = fileCppunitReport.getName();
                 try {
-                    transform(fileCppunitReportName, fileStream, junitOutputPath);
+                	reportTransformer.transform(fileCppunitReportName, fileStream, junitOutputPath);
                 } catch (TransformerException te) {
                     throw new IOException2(
                             "Could not transform the CppUnit report.", te);
@@ -81,9 +70,9 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
                     fileStream.close();
                 }
             }
-        } else {
-            retValue = Boolean.FALSE;
-        }
+            
+            retValue= true;
+        } 
 
         return retValue;
     }
@@ -107,35 +96,6 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
     }
     
     
-    /**
-     * Transform the cppunit file into several a junit files in the output path
-     * 
-     * @param cppunitFileStream the cppunit file stream to transform
-     * @param junitOutputPath the output path to put all junit files
-     * @throws IOException thrown if there was any problem with the transform.
-     * @throws TransformerException
-     * @throws SAXException
-     * @throws ParserConfigurationException 
-     */
-    private void transform(String cppunitFileName, InputStream cppunitFileStream, File junitOutputPath) throws IOException, TransformerException,
-            SAXException, ParserConfigurationException {
-        
-    	initializeProcessor();        
-        File junitTargetFile = new File(junitOutputPath, JUNIT_FILE_PREFIX + cppunitFileName + JUNIT_FILE_POSTFIX);
-        FileOutputStream fileOutputStream = new FileOutputStream(junitTargetFile);
-        try {
-        	cppunitTransformer.transform(new StreamSource(cppunitFileStream), new StreamResult(fileOutputStream));
-        } finally {
-            fileOutputStream.close();
-        }
-    }    
     
-    private void initializeProcessor() throws TransformerFactoryConfigurationError, TransformerConfigurationException,ParserConfigurationException {
-    	if (!xslIsInitialized) {
-    		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-    		cppunitTransformer = transformerFactory.newTransformer(new StreamSource(this.getClass().getResourceAsStream(CPPUNIT_TO_JUNIT_XSL)));
-    		xslIsInitialized = true;
-    	}
-    }        
     
 }

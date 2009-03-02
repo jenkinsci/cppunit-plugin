@@ -1,5 +1,6 @@
 package hudson.plugins.cppunit;
 
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
@@ -85,7 +86,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
         boolean result = true;
         try {
             listener.getLogger().println("Recording CppUnit tests results");
-            CppUnitArchiver archiver = new CppUnitArchiver(listener, testResultsPattern);
+            CppUnitArchiver archiver = new CppUnitArchiver(listener, testResultsPattern, new CppUnitTransformerImpl());
             result = build.getProject().getWorkspace().act(archiver);
 
             if (result) {
@@ -199,9 +200,10 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
         return DESCRIPTOR;
     }
 
+    @Extension
     public static class DescriptorImpl extends Descriptor<Publisher> {
 
-        protected DescriptorImpl() {
+        public DescriptorImpl() {
             super(CppUnitPublisher.class);
         }
 

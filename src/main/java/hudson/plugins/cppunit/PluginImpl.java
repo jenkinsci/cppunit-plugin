@@ -2,8 +2,6 @@ package hudson.plugins.cppunit;
 
 import hudson.Plugin;
 
-import hudson.tasks.BuildStep;
-
 /**
  * 
  * Entry point of a plugin.
@@ -23,11 +21,6 @@ import hudson.tasks.BuildStep;
 
 public class PluginImpl extends Plugin {
 
-    @Override
-    public void start() throws Exception {
 
-        BuildStep.PUBLISHERS.addRecorder(CppUnitPublisher.DESCRIPTOR);
-
-    }
 
 }
