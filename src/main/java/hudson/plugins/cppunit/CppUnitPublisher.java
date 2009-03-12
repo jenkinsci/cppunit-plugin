@@ -89,14 +89,16 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
         boolean result = true;
         try {
-            listener.getLogger().println("Recording CppUnit tests results");
+            listener.getLogger().println("Recording CppUnit tests results.");
             
             CppUnitTransformer cppUnitTransformer;
-            if (useCustomStylesheet){
+            if (useCustomStylesheet && customStylesheet!=null){
+            	listener.getLogger().println("Use the specified stylesheet.");
             	FilePath customStylesheetFilePath = build.getParent().getModuleRoot().child(customStylesheet);
             	cppUnitTransformer = new CppUnitTransformerImpl(customStylesheetFilePath);	
             }
             else{
+            	listener.getLogger().println("Use the default CppUnit plugin stylesheet.");
             	cppUnitTransformer = new CppUnitTransformerImpl();
             }
             
@@ -107,6 +109,8 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
                 result = recordTestResult(CppUnitArchiver.JUNIT_REPORTS_PATH + "/TEST-*.xml", build, listener);
                 build.getProject().getWorkspace().child(CppUnitArchiver.JUNIT_REPORTS_PATH).deleteRecursive();
              }
+            
+            listener.getLogger().println("End recording CppUnit tests results.");
             
         } catch (TransformerException te) {
             throw new AbortException("Could not read the XSL XML file.",te);
@@ -254,23 +258,29 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             new FormFieldValidator(req, rsp, true) {
                 public void check() throws IOException, ServletException {
                     
-                	String job = Util.fixEmptyAndTrim(request.getParameter("job"));
                 	String value = Util.fixEmptyAndTrim(request.getParameter("value"));
-                	FilePath workspace = CppUnitPublisher.getWorkspace(Hudson.getInstance().getItemByFullName(job, AbstractProject.class));
-                	File f =null;
-                	try{
-                	 f = new File(new FilePath(workspace,value).toURI());
+                	if (value!=null){
+                	  		
+                		String job = Util.fixEmptyAndTrim(request.getParameter("job"));                	
+                		FilePath workspace = CppUnitPublisher.getWorkspace(Hudson.getInstance().getItemByFullName(job, AbstractProject.class));
+                		File f =null;
+                		try{
+                			f = new File(new FilePath(workspace,value).toURI());
+                		}
+                		catch (InterruptedException ie){
+                			error(value+" is not a valid file.");
+                			return;                		
+                		}
+                		
+                		if (!f.exists()) {
+                			error(value+" is not a valid file.");
+                			return;
+                		}
                 	}
-                	catch (InterruptedException ie){
-                    	error(value+" is not a valid file.");
-                        return;                		
+                	else {
+                		error(" The specified stylesheet is mandatory.");
                 	}
-                	//File f = getFileParameter("value");
-                    if (!f.exists()) {
-                    	error(value+" is not a valid file.");
-                        return;
-                    }
-
+                	
                     ok();
                 }
             }.process();
