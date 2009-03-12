@@ -1,34 +1,44 @@
 package hudson.plugins.cppunit;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.maven.agent.AbortException;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
+import hudson.util.FormFieldValidator;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import javax.servlet.ServletException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Class that records CppUnit test reports into Hudson.
  * 
+ * @author Gregory Boissinot
+ *   
  */
 public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializable {
 
@@ -37,36 +47,32 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
 
     private String testResultsPattern;
-    private boolean debug = false;
-    private boolean keepJUnitReports = false;
-    private boolean skipJUnitArchiver = false;
+    
+    private boolean useCustomStylesheet;
+    
+    private String customStylesheet;
 
-    public CppUnitPublisher(String testResultsPattern, boolean debug, boolean keepJUnitReports, boolean skipJUnitArchiver) {
+
+    @DataBoundConstructor
+    public CppUnitPublisher(String testResultsPattern, boolean useCustomStylesheet, String customStylesheet) {
         this.testResultsPattern = testResultsPattern;
-        this.debug = debug;
-        if (this.debug) {
-            this.keepJUnitReports = keepJUnitReports;
-            this.skipJUnitArchiver = skipJUnitArchiver;
-        }
+        this.useCustomStylesheet=useCustomStylesheet;
+        this.customStylesheet=customStylesheet;
     }
 
     public String getTestResultsPattern() {
         return testResultsPattern;
     }
 
-    public boolean getDebug() {
-        return debug;
-    }
+    public boolean getUseCustomStylesheet() {
+		return useCustomStylesheet;
+	}
+    
+	public String getCustomStylesheet() {
+		return customStylesheet;
+	}
 
-    public boolean getKeepJunitReports() {
-        return keepJUnitReports;
-    }
-
-    public boolean getSkipJunitArchiver() {
-        return skipJUnitArchiver;
-    }
-
-    @Override
+	@Override
     public Action getProjectAction(hudson.model.Project project) {
         TestResultProjectAction action = project.getAction(TestResultProjectAction.class);
         if (action == null) {
@@ -80,29 +86,27 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
     	
-        if (debug) {
-            listener.getLogger().println("CppUnit publisher running in debug mode.");
-        }
+
         boolean result = true;
         try {
             listener.getLogger().println("Recording CppUnit tests results");
-            CppUnitArchiver archiver = new CppUnitArchiver(listener, testResultsPattern, new CppUnitTransformerImpl());
+            
+            CppUnitTransformer cppUnitTransformer;
+            if (useCustomStylesheet){
+            	FilePath customStylesheetFilePath = build.getParent().getModuleRoot().child(customStylesheet);
+            	cppUnitTransformer = new CppUnitTransformerImpl(customStylesheetFilePath);	
+            }
+            else{
+            	cppUnitTransformer = new CppUnitTransformerImpl();
+            }
+            
+            CppUnitArchiver archiver = new CppUnitArchiver(listener, testResultsPattern, cppUnitTransformer);
             result = build.getProject().getWorkspace().act(archiver);
 
             if (result) {
-                if (skipJUnitArchiver) {
-                    listener.getLogger().println("Skipping feeding JUnit reports to JUnitArchiver");
-                } else {
-                    // Run the JUnit test archiver
-                    result = recordTestResult(CppUnitArchiver.JUNIT_REPORTS_PATH + "/TEST-*.xml", build, listener);
-                }
-                
-                if (keepJUnitReports) {
-                    listener.getLogger().println("Skipping deletion of temporary JUnit reports.");
-                } else {
-                    build.getProject().getWorkspace().child(CppUnitArchiver.JUNIT_REPORTS_PATH).deleteRecursive();
-                }
-            }
+                result = recordTestResult(CppUnitArchiver.JUNIT_REPORTS_PATH + "/TEST-*.xml", build, listener);
+                build.getProject().getWorkspace().child(CppUnitArchiver.JUNIT_REPORTS_PATH).deleteRecursive();
+             }
             
         } catch (TransformerException te) {
             throw new AbortException("Could not read the XSL XML file.",te);
@@ -196,21 +200,37 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
         return result;
     }
 
-    public Descriptor<Publisher> getDescriptor() {
-        return DESCRIPTOR;
+    @Override
+    public Descriptor getDescriptor() {
+        return DESCRIPTOR;        
     }
+    
+    private static FilePath getWorkspace (AbstractProject p) {
+        try {
+            return p.getWorkspace();
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+ 
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<Publisher> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         public DescriptorImpl() {
-            super(CppUnitPublisher.class);
+            //super(CppUnitPublisher.class);
+            load();
         }
 
         @Override
         public String getDisplayName() {
             return "Publish CppUnit test result report";
         }
+        
+        @Override
+        public boolean isApplicable(Class type) {
+            return true;
+        }        
 
         @Override
         public String getHelpFile() {
@@ -219,10 +239,41 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
         @Override
         public Publisher newInstance(StaplerRequest req) throws FormException {
-            return new CppUnitPublisher(req.getParameter("cppunit_reports.pattern"), 
-                    (req.getParameter("cppunit_reports.debug") != null), 
-                    (req.getParameter("cppunit_reports.keepjunitreports") != null), 
-                    (req.getParameter("cppunit_reports.skipjunitarchiver") != null));
+        	return new CppUnitPublisher( req.getParameter("cppunit_reports.pattern"), 
+            							(req.getParameter("cppunit_reports.useCustomStylesheet")!=null),
+            							req.getParameter("cppunit_reports.customStylesheet"));
+            
+        }
+        
+        
+        
+        /**
+         * Checks if the custom stylesheet location is valid
+         */
+        public void doCheckValidCustomStylesheetLocation( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+            new FormFieldValidator(req, rsp, true) {
+                public void check() throws IOException, ServletException {
+                    
+                	String job = Util.fixEmptyAndTrim(request.getParameter("job"));
+                	String value = Util.fixEmptyAndTrim(request.getParameter("value"));
+                	FilePath workspace = CppUnitPublisher.getWorkspace(Hudson.getInstance().getItemByFullName(job, AbstractProject.class));
+                	File f =null;
+                	try{
+                	 f = new File(new FilePath(workspace,value).toURI());
+                	}
+                	catch (InterruptedException ie){
+                    	error(value+" is not a valid file.");
+                        return;                		
+                	}
+                	//File f = getFileParameter("value");
+                    if (!f.exists()) {
+                    	error(value+" is not a valid file.");
+                        return;
+                    }
+
+                    ok();
+                }
+            }.process();
         }
     }
 }

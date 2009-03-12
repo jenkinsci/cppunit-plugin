@@ -1,7 +1,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<!--
-		This jelly script is used for per-project configuration.
-	-->
+
+
+
 	<f:entry title="Test report XMLs" description="
 	  &lt;a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>Fileset 'includes'&lt;/a>
 	  setting that specifies the generated raw XML report files,
@@ -10,15 +10,19 @@
 	">
     	<f:textbox name="cppunit_reports.pattern" value="${instance.testResultsPattern}" />
 	</f:entry>
-	<j:if test="${instance.debug}">
-		<f:entry title="Debug">
-			<f:checkbox name="cppunit_reports.debug" checked="${instance.debug}"/>
-		</f:entry>
-		<f:entry title="Keep JUnit report files">
-			<f:checkbox name="cppunit_reports.keepjunitreports" checked="${instance.keepJunitReports}"/>
-		</f:entry>
-		<f:entry title="Skip JUnit archiving">
-			<f:checkbox name="cppunit_reports.skipjunitarchiver" checked="${instance.skipJunitArchiver}"/>
-		</f:entry>
-	</j:if>
+
+
+  <f:nested>
+    <table>
+      <f:optionalBlock name="cppunit_reports.useCustomStylesheet" title="Use a custom stylesheet to convert CppUnit result to JUnit files"
+                       checked="${instance.getUseCustomStylesheet()}" help="${rootURL}/plugin/cppunit/useCustomStylesheet.html">
+        <f:entry title="Specify a custom stylesheet">
+          <f:textbox name="cppunit_reports.customStylesheet" 
+          			 value="${instance.customStylesheet}"
+          			 checkUrl="'${rootURL}/publisher/CppUnitPublisher/checkValidCustomStylesheetLocation?job=${it.fullName}&amp;value='+escape(this.value)"/>
+        </f:entry>
+      </f:optionalBlock>
+    </table>
+  </f:nested>
+
 </j:jelly>

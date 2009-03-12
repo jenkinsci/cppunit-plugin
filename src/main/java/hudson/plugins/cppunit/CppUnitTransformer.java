@@ -10,7 +10,6 @@ import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 
 public interface CppUnitTransformer {
-
 	
-    public void transform(String cppunitFileName, InputStream cppunitFileStream, File junitOutputPath) throws IOException, TransformerException, SAXException, ParserConfigurationException ;
+    public void transform(String cppunitFileName, InputStream cppunitFileStream, File junitOutputPath) throws IOException, TransformerException, SAXException, ParserConfigurationException, InterruptedException, IOException ;
 }

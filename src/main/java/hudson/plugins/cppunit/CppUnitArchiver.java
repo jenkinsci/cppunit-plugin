@@ -12,16 +12,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
-import org.xml.sax.SAXException;
 
 /**
- * Class responsible for transforming CppUnit to JUnit files and then run them all through the JUnit result archiver.
+ * Class responsible for transforming all CppUnit files to JUnit files and then run them all through the JUnit result archiver.
  * 
+ * @author Gregory Boissinot
  */
 public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializable {
 
@@ -57,16 +56,11 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
                 String fileCppunitReportName = fileCppunitReport.getName();
                 try {
                 	reportTransformer.transform(fileCppunitReportName, fileStream, junitOutputPath);
-                } catch (TransformerException te) {
+                } catch (Exception te) {
                     throw new IOException2(
                             "Could not transform the CppUnit report.", te);
-                } catch (SAXException se) {
-                    throw new IOException2(
-                            "Could not transform the CppUnit report.", se);
-                } catch (ParserConfigurationException pce) {
-                    throw new IOException2(
-                            "Could not initalize the XML parser.", pce);
-                } finally {
+                }
+                finally {
                     fileStream.close();
                 }
             }

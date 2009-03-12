@@ -52,8 +52,8 @@ public class CppUnitArchiverTest extends AbstractWorkspaceTest {
     
     
     	cppunitArchiver = new CppUnitArchiver(buildListener, "*.xml",transformer);
-        workspace.createTextTempFile("nunit-report", ".xml", "content");
-        workspace.createTextTempFile("nunit-report", ".xml", "content");
+        workspace.createTextTempFile("cppunit-report", ".xml", "content");
+        workspace.createTextTempFile("cppunit-report", ".xml", "content");
 
         context.checking(new Expectations() {
             {
@@ -80,7 +80,7 @@ public class CppUnitArchiverTest extends AbstractWorkspaceTest {
 
 
     @Test
-    public void testNoNUnitReports() throws Exception {
+    public void testNoCppUnitReports() throws Exception {
         classContext.checking(new Expectations() {
             {
                 ignoring(buildListener).getLogger();
