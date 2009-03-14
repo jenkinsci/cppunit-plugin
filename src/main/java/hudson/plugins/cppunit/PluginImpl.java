@@ -18,4 +18,5 @@ public class PluginImpl extends Plugin {
         BuildStep.PUBLISHERS.addRecorder(CppUnitPublisher.DESCRIPTOR);
     }
     
+    
 }

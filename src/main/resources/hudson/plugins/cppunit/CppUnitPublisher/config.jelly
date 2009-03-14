@@ -5,7 +5,7 @@
 	<f:entry title="Test report XMLs" description="
 	  &lt;a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>Fileset 'includes'&lt;/a>
 	  setting that specifies the generated raw XML report files,
-	  such as 'myproject/target/test-reports/*.xml'.
+	  such as 'myproject/cppunit-reports/*.xml'.
 	  Basedir of the fileset is &lt;a href='ws/'>the workspace root&lt;/a>.
 	">
     	<f:textbox name="cppunit_reports.pattern" value="${instance.testResultsPattern}" />
@@ -16,7 +16,7 @@
     <table>
       <f:optionalBlock name="cppunit_reports.useCustomStylesheet" title="Use a custom stylesheet to convert CppUnit result report to JUnit test result report"
                        checked="${instance.getUseCustomStylesheet()}" help="/plugin/cppunit/CppUnitPublisher/useCustomStylesheet.html">
-        <f:entry title="Specify a custom stylesheet">
+        <f:entry title="Custom stylesheet directory">
           <f:textbox name="cppunit_reports.customStylesheet" 
           			 value="${instance.customStylesheet}"
           			 checkUrl="'${rootURL}/publisher/CppUnitPublisher/checkValidCustomStylesheetLocation?job=${it.fullName}&amp;value='+escape(this.value)"/>

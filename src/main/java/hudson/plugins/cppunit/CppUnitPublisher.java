@@ -1,6 +1,5 @@
 package hudson.plugins.cppunit;
 
-import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -218,7 +217,6 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     }
  
 
-    @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         public DescriptorImpl() {
@@ -278,7 +276,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
                 		}
                 	}
                 	else {
-                		error(" The specified stylesheet is mandatory.");
+                		error(" The stylesheet directory is mandatory.");
                 	}
                 	
                     ok();
