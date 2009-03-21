@@ -55,10 +55,8 @@
                   <xsl:value-of select="FailureType" />
                </xsl:attribute>
                <xsl:value-of select="Message" />
-               File:
-               <xsl:value-of select="Location/File" />
-               Line:
-               <xsl:value-of select="Location/Line" />
+               File:<xsl:value-of select="Location/File" />
+               Line:<xsl:value-of select="Location/Line" />
                </error>
             </xsl:when>
 
@@ -71,10 +69,8 @@
                   <xsl:value-of select="FailureType" />
                </xsl:attribute>
                <xsl:value-of select="Message" />
-               File:
-               <xsl:value-of select="Location/File" />
-               Line:
-               <xsl:value-of select="Location/Line" />
+               File:<xsl:value-of select="Location/File" />
+               Line:<xsl:value-of select="Location/Line" />
                </failure>
             </xsl:otherwise>
          </xsl:choose>

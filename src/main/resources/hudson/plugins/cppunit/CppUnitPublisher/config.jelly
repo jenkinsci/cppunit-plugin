@@ -5,7 +5,7 @@
 	<f:entry title="Test report XMLs" description="
 	  &lt;a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>Fileset 'includes'&lt;/a>
 	  setting that specifies the generated raw XML report files,
-	  such as 'myproject/cppunit-reports/*.xml'.
+	  such as 'myproject/build/cppunit-reports/*.xml'.
 	  Basedir of the fileset is &lt;a href='ws/'>the workspace root&lt;/a>.
 	">
     	<f:textbox name="cppunit_reports.pattern" value="${instance.testResultsPattern}" />
