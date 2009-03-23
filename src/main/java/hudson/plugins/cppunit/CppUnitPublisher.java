@@ -37,6 +37,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * Class that records CppUnit test reports into Hudson.
  * 
  * @author Gregory Boissinot
+ * 20090323 Correction of the java.io.NotSerializableException with a slave  
  *   
  */
 public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializable {
@@ -220,8 +221,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         public DescriptorImpl() {
-            //super(CppUnitPublisher.class);
-            load();
+            super(CppUnitPublisher.class);          
         }
 
         @Override

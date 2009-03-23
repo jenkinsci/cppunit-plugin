@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
@@ -23,9 +24,14 @@ import org.xml.sax.SAXException;
  * 
  * @author Gregory Boissinot
  */
-public class CppUnitTransformerImpl implements CppUnitTransformer{
+public class CppUnitTransformerImpl implements CppUnitTransformer, Serializable{
 
-    private transient Transformer cppunitXMLTransformer;    
+    /**
+	 * SerialNumber UID
+	 */
+	private static final long serialVersionUID = 1111L;
+
+	private transient Transformer cppunitXMLTransformer;    
     
     private static final String JUNIT_FILE_POSTFIX = ".xml";
     private static final String JUNIT_FILE_PREFIX = "TEST-";
