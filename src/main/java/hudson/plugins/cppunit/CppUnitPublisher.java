@@ -74,12 +74,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
 	@Override
     public Action getProjectAction(hudson.model.Project project) {
-        TestResultProjectAction action = project.getAction(TestResultProjectAction.class);
-        if (action == null) {
-            return new TestResultProjectAction(project);
-        } else {
-            return null;
-        }
+         return new TestResultProjectAction(project);
     }
 
     @Override
