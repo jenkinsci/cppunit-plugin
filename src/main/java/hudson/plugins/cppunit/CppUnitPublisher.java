@@ -4,7 +4,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
-import hudson.maven.agent.AbortException;
+import hudson.AbortException;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -108,7 +108,9 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             listener.getLogger().println("End recording CppUnit tests results.");
             
         } catch (TransformerException te) {
-            throw new AbortException("Could not read the XSL XML file.",te);
+        	listener.getLogger().println("Error publishing cppunit results" + te.toString());
+        	throw new AbortException("Could not read the XSL XML file.");
+            
         }
 
         return result;
@@ -143,8 +145,11 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
                 action = existingAction;
                 action.setResult(result, listener);
             }
-            if(result.getPassCount()==0 && result.getFailCount()==0)
-                new AbortException("None of the test reports contained any result");
+            
+            if(result.getPassCount()==0 && result.getFailCount()==0){
+            	throw new AbortException("None of the test reports contained any result");
+            }
+                
         } catch (AbortException e) {
             if(build.getResult()==Result.FAILURE)
                 // most likely a build failed before it gets to the test phase.

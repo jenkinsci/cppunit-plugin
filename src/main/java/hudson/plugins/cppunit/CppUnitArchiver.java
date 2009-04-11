@@ -1,6 +1,5 @@
 package hudson.plugins.cppunit;
 
-import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
@@ -77,7 +76,7 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
      * @param parentPath parent
      * @return an array of strings
      */
-    private String[] findCppUnitReports(File parentPath) throws AbortException {
+    private String[] findCppUnitReports(File parentPath)  {
         FileSet fs = Util.createFileSet(parentPath,testResultsPattern);
         DirectoryScanner ds = fs.getDirectoryScanner();
 
