@@ -11,7 +11,7 @@
 	<version>0.4-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 	<name>Hudson cppunit plugin</name>
-	<url>http://hudson.gotdns.com/wiki/display/HUDSON/Cppunit+Plugin</url>
+	<url>http://wiki.hudson-ci.org/display/HUDSON/Cppunit+Plugin</url>
 
 	<dependencies>
 		<dependency>
