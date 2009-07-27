@@ -25,16 +25,52 @@ public class CppUnitToJUnitXslTest {
     }
 
     @Test
-    public void testTransformation() throws Exception {
-
-        Transform myTransform = new Transform(
-        						new InputSource(this.getClass().getResourceAsStream("cppunit-example1.xml")),
-        						new InputSource(this.getClass().getResourceAsStream(CppUnitTransformer.CPPUNIT_TO_JUNIT_XSL)));
-
-        Diff myDiff = new Diff(readXmlAsString("junit-cppunit-example1.xml"), myTransform.getResultString());
-        assertTrue("XSL transformation did not work" + myDiff, myDiff.similar());
+    public void testSuccessAndFailure() throws Exception {
+    	processTransform("cppunit-successAndFailure.xml","junit-cppunit-successAndFailure.xml");
+    }
+    @Test
+    public void testZeroFailure() throws Exception {
+    	processTransform("cppunit-zeroFailure.xml","junit-cppunit-zeroFailure.xml");
+    }
+    @Test
+    public void testZeroSuccess() throws Exception {
+    	processTransform("cppunit-zeroSuccess.xml","junit-cppunit-zeroSuccess.xml");
+    }
+    @Test
+    public void testZeroSuccessAndFailure() throws Exception {
+    	processTransform("cppunit-zeroFailureAndSuccess.xml","junit-cppunit-zeroFailureAndSuccess.xml");   
     }
 
+    
+    @Test
+    public void testAdaSuccessAndFailure() throws Exception {
+    	processTransform("ada/ada-cppunit-successAndFailure.xml","ada/junit-ada-cppunit-successAndFailure.xml");
+    }
+    @Test
+    public void testAdaZeroFailure() throws Exception {
+    	processTransform("ada/ada-cppunit-zeroFailure.xml","ada/junit-ada-cppunit-zeroFailure.xml");
+    }
+    @Test
+    public void testAdaZeroSuccess() throws Exception {
+    	processTransform("ada/ada-cppunit-zeroSuccess.xml","ada/junit-ada-cppunit-zeroSuccess.xml");
+    }
+    @Test
+    public void testAdaZeroSuccessAndFailure() throws Exception {
+    	processTransform("ada/ada-cppunit-zeroFailureAndSuccess.xml","ada/junit-ada-cppunit-zeroFailureAndSuccess.xml");   
+    }
+    
+    
+    private void processTransform(String cppunitFile, String destJunitXMLFile) throws Exception {
+
+        Transform myTransform = new Transform(
+        						new InputSource(this.getClass().getResourceAsStream(cppunitFile)),
+        						new InputSource(this.getClass().getResourceAsStream(CppUnitTransformer.CPPUNIT_TO_JUNIT_XSL)));
+
+        Diff myDiff = new Diff(readXmlAsString(destJunitXMLFile), myTransform.getResultString());
+        assertTrue("XSL transformation did not work" + myDiff, myDiff.similar());
+    }
+    
+    
     private String readXmlAsString(String resourceName) throws IOException {
         String xmlString = "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(resourceName)));

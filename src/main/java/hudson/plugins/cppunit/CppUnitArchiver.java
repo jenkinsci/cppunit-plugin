@@ -56,8 +56,7 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
                 try {
                 	reportTransformer.transform(fileCppunitReportName, fileStream, junitOutputPath);
                 } catch (Exception te) {
-                    throw new IOException2(
-                            "Could not transform the CppUnit report.", te);
+                    throw new IOException2("Could not transform the CppUnit report.", te);
                 }
                 finally {
                     fileStream.close();

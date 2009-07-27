@@ -1,15 +1,15 @@
 package hudson.plugins.cppunit;
 
+import hudson.AbortException;
+import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
-import hudson.AbortException;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
@@ -44,7 +44,8 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
     private static final long serialVersionUID = 1L;
 
-    public static final Descriptor<Publisher> DESCRIPTOR = new DescriptorImpl();
+    @Extension
+    public static final CppUnitDescriptor DESCRIPTOR = new CppUnitDescriptor();
 
     private String testResultsPattern;
     
@@ -110,6 +111,9 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             if (result) {
                 result = recordTestResult(CppUnitArchiver.JUNIT_REPORTS_PATH + "/TEST-*.xml", build, listener);
                 build.getProject().getWorkspace().child(CppUnitArchiver.JUNIT_REPORTS_PATH).deleteRecursive();
+             } else{
+            	 listener.getLogger().println("Processing 0 cppunit files.");
+            	 build.setResult(Result.FAILURE);
              }
             
             listener.getLogger().println("End recording CppUnit tests results.");
@@ -212,7 +216,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     }
 
     @Override
-    public Descriptor getDescriptor() {
+    public CppUnitDescriptor getDescriptor() {
         return DESCRIPTOR;        
     }
     
@@ -225,9 +229,9 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     }
  
 
-    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+    public static final class CppUnitDescriptor extends BuildStepDescriptor<Publisher> {
 
-        public DescriptorImpl() {
+        public CppUnitDescriptor() {
             super(CppUnitPublisher.class);          
         }
 

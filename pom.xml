@@ -12,7 +12,7 @@
    <version>0.4-SNAPSHOT</version>
    <packaging>hpi</packaging>
    <name>Hudson cppunit plugin</name>
-   <url>http://wiki.hudson-ci.org/display/HUDSON/Cppunit+Plugin</url>
+   <url>http://wiki.hudson-ci.org/display/HUDSON/CppUnit+Plugin</url>
 
    <dependencies>
       <dependency>

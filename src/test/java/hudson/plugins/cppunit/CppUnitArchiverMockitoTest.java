@@ -38,26 +38,48 @@ public class CppUnitArchiverMockitoTest extends AbstractWorkspaceTest {
         assertFalse("The archiver did not return false when it could not find any files", result);
     }
     
-    private void processCppUnit(int nbFiles)throws Exception {  
+    private boolean processCppUnit(int nbFiles)throws Exception {  
         CppUnitArchiver cppunitArchiver = new CppUnitArchiver(buildListener, "*.xml",transformer);
         Boolean result = cppunitArchiver.invoke(parentFile, virtualChannel);
         verify(transformer, times(nbFiles)).transform(anyString(),any(InputStream.class), any(File.class));        
-        Assert.assertTrue(true);
+        return result;
     }
 
     @Test
-    public void testInovke0Transform()   throws Exception {  	
-    	processCppUnit(0);
+    public void testInovke0TransformWithXml() throws Exception {  	
+    	boolean result = processCppUnit(0);
+    	Assert.assertFalse(result);
     }
     @Test
-    public void testInovke1Transform()   throws Exception {  	
+    public void testInovke1TransformWithXml() throws Exception {  	
         workspace.createTextTempFile("cppunit-report", ".xml", "content");    
-        processCppUnit(1);
+        boolean result = processCppUnit(1);
+        Assert.assertTrue(result);
     }
+        
     @Test
-    public void testInovke2Transform()   throws Exception {  	
+    public void testInovke2TransformWithXml() throws Exception {  	
         workspace.createTextTempFile("cppunit-report", ".xml", "content");
         workspace.createTextTempFile("cppunit-report", ".xml", "content");    
-        processCppUnit(2);
+        boolean result = processCppUnit(2);
+        Assert.assertTrue(result);
     }
+    
+    @Test
+    public void testInovke2TransformWithText() throws Exception {  	
+        workspace.createTextTempFile("cppunit-report", ".txt", "content");
+        workspace.createTextTempFile("cppunit-report", ".txt", "content");    
+        boolean result = processCppUnit(0);
+        Assert.assertFalse(result);
+    }
+    
+    @Test
+    public void testInovke2TransformMixed() throws Exception {  	
+        workspace.createTextTempFile("cppunit-report", ".xml", "content");
+        workspace.createTextTempFile("cppunit-report", ".txt", "content");    
+        boolean result = processCppUnit(1);
+        Assert.assertTrue(result);
+    }
+    
+    
 }

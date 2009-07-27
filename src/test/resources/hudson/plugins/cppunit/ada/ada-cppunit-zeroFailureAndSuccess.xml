@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<TestRun elapsed='6.280E-4'>
+  <Statistics>
+    <Tests>0</Tests>
+    <FailuresTotal>0</FailuresTotal>
+    <Failures>0</Failures>
+    <Errors>0</Errors>
+  </Statistics>
+  <SuccessfulTests>
+  </SuccessfulTests>
+  <FailedTests>
+  </FailedTests>
+</TestRun>
