@@ -48,14 +48,17 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
     private String testResultsPattern;
     
-    private boolean useCustomStylesheet;
+    private boolean cppunitFromAUnit;
     
+    private boolean useCustomStylesheet;
+           
     private String customStylesheet;
 
 
     @DataBoundConstructor
     public CppUnitPublisher(String testResultsPattern, boolean useCustomStylesheet, String customStylesheet) {
         this.testResultsPattern = testResultsPattern;
+        this.cppunitFromAUnit=cppunitFromAUnit;
         this.useCustomStylesheet=useCustomStylesheet;
         this.customStylesheet=customStylesheet;
     }
@@ -71,6 +74,10 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 	public String getCustomStylesheet() {
 		return customStylesheet;
 	}
+	
+    public boolean getCppunitFromAUnit() {
+		return cppunitFromAUnit;
+	}	
 
 	@Override
     public Action getProjectAction(hudson.model.Project project) {
@@ -90,11 +97,11 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             if (useCustomStylesheet && customStylesheet!=null){
             	listener.getLogger().println("Use the specified stylesheet.");
             	FilePath customStylesheetFilePath = build.getParent().getModuleRoot().child(customStylesheet);
-            	cppUnitTransformer = new CppUnitTransformerImpl(customStylesheetFilePath);	
+            	cppUnitTransformer = new CppUnitTransformer(customStylesheetFilePath);	
             }
             else{
             	listener.getLogger().println("Use the default CppUnit plugin stylesheet.");
-            	cppUnitTransformer = new CppUnitTransformerImpl();
+            	cppUnitTransformer = new CppUnitTransformer();
             }
             
             CppUnitArchiver archiver = new CppUnitArchiver(listener, testResultsPattern, cppUnitTransformer);

@@ -29,7 +29,7 @@ public class CppUnitToJUnitXslTest {
 
         Transform myTransform = new Transform(
         						new InputSource(this.getClass().getResourceAsStream("cppunit-example1.xml")),
-        						new InputSource(this.getClass().getResourceAsStream(CppUnitTransformerImpl.CPPUNIT_TO_JUNIT_XSL)));
+        						new InputSource(this.getClass().getResourceAsStream(CppUnitTransformer.CPPUNIT_TO_JUNIT_XSL)));
 
         Diff myDiff = new Diff(readXmlAsString("junit-cppunit-example1.xml"), myTransform.getResultString());
         assertTrue("XSL transformation did not work" + myDiff, myDiff.similar());
