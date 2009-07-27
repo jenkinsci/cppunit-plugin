@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding='ISO-8859-1' standalone='yes' ?>
 <TestRun>
   <FailedTests>
-    <FailedTest id="3">
+    <FailedTest id="1">
       <Name>MathTest::testSum</Name>
       <FailureType>Assertion</FailureType>
       <Location>

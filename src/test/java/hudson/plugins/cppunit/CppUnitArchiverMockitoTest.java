@@ -80,6 +80,5 @@ public class CppUnitArchiverMockitoTest extends AbstractWorkspaceTest {
         boolean result = processCppUnit(1);
         Assert.assertTrue(result);
     }
-    
-    
+   
 }

@@ -127,7 +127,6 @@
                </xsl:attribute>
 
                <xsl:value-of select="Message" />
-
                File:<xsl:value-of select="Location/File" />
                Line:<xsl:value-of select="Location/Line" />
                </error>
@@ -144,7 +143,6 @@
                </xsl:attribute>
 
                <xsl:value-of select="Message" />
-
                File:<xsl:value-of select="Location/File" />
                Line:<xsl:value-of select="Location/Line" />
                </failure>
