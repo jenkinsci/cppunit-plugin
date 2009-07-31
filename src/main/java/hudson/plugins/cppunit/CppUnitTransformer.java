@@ -3,9 +3,7 @@ package hudson.plugins.cppunit;
 import hudson.FilePath;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,24 +49,19 @@ public class CppUnitTransformer implements Serializable{
     /**
      * Transform the cppunit file into several a junit files in the output path
      * 
-     * @param cppunitFileStream the cppunit file stream to transform
+     * @param cppunitFileName the cppunit file  to transform
      * @param junitOutputPath the output path to put all junit files
      * @throws IOException thrown if there was any problem with the transform.
      * @throws TransformerException
      * @throws SAXException
      * @throws ParserConfigurationException 
      */
-    public void transform(String cppunitFileName, InputStream cppunitFileStream, File junitOutputPath) throws IOException, TransformerException,
+    public void transform(FilePath cppunitFileName, FilePath junitOutputPath) throws IOException, TransformerException,
             SAXException, ParserConfigurationException, InterruptedException, IOException {
         
-    	initializeProcessor();        
-        File junitTargetFile = new File(junitOutputPath, JUNIT_FILE_PREFIX + cppunitFileName + JUNIT_FILE_POSTFIX);
-        FileOutputStream fileOutputStream = new FileOutputStream(junitTargetFile);
-        try {
-        	cppunitXMLTransformer.transform(new StreamSource(cppunitFileStream), new StreamResult(fileOutputStream));
-        } finally {
-            fileOutputStream.close();
-        }
+    	initializeProcessor();      	
+    	FilePath junitTargetFile = new FilePath(junitOutputPath, JUNIT_FILE_PREFIX + cppunitFileName.hashCode() + JUNIT_FILE_POSTFIX);
+        cppunitXMLTransformer.transform(new StreamSource(new File(cppunitFileName.toURI())), new StreamResult(new File(junitTargetFile.toURI())));
     }    
     
     private void initializeProcessor() 
