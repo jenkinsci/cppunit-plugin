@@ -1,20 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
+   <f:entry title="Test report XMLs"
+		 description="${%description.pattern}">
+      <f:textbox name="cppunit_reports.pattern" value="${instance.testResultsPattern}" />
+   </f:entry>
 
-
-	<f:entry title="Test report XMLs" description="
-	  &lt;a href='http://ant.apache.org/manual/CoreTypes/fileset.html'>Fileset 'includes'&lt;/a>
-	  setting that specifies the generated raw XML report files,
-	  such as 'myproject/build/cppunit-reports/*.xml'.
-	  Basedir of the fileset is &lt;a href='ws/'>the workspace root&lt;/a>.
-	">
-    	<f:textbox name="cppunit_reports.pattern" value="${instance.testResultsPattern}" />
-	</f:entry>
-
-
-  <f:nested>
+   <f:nested>
     <table>
-      <f:optionalBlock name="cppunit_reports.useCustomStylesheet" title="Use a custom stylesheet to convert CppUnit result report to JUnit test result report"
+      <f:optionalBlock name="cppunit_reports.useCustomStylesheet" 
+		       title="Use a custom stylesheet to convert CppUnit result report to JUnit test result report"
                        checked="${instance.getUseCustomStylesheet()}" help="/plugin/cppunit/CppUnitPublisher/useCustomStylesheet.html">
         <f:entry title="Custom stylesheet directory">
           <f:textbox name="cppunit_reports.customStylesheet" 

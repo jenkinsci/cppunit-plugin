@@ -23,8 +23,8 @@ import hudson.util.FormFieldValidator;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.xml.transform.TransformerException;
@@ -55,6 +55,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
            
     private String customStylesheet;
 
+    private static final Logger LOG = Logger.getLogger(CppUnitPublisher.class.getName());    
 
     @DataBoundConstructor
     public CppUnitPublisher(String testResultsPattern, boolean useCustomStylesheet, String customStylesheet) {
@@ -85,20 +86,19 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             throws InterruptedException, IOException {
     	
         boolean result=false;
-        PrintStream logger = listener.getLogger();     
         try {
         	   	
-            Messages.log(logger,"Recording CppUnit tests results.");
+        	Messages.log(listener,"Recording CppUnit tests results.");
                         
             //Build the transformer
             CppUnitTransformer cppUnitTransformer;            
             if (useCustomStylesheet && customStylesheet!=null){
-            	Messages.log(logger,"Use the specified stylesheet.");
+            	Messages.log(listener,"Use the specified stylesheet.");
             	FilePath customStylesheetFilePath = build.getParent().getModuleRoot().child(customStylesheet);
             	cppUnitTransformer = new CppUnitTransformer(customStylesheetFilePath);	
             }
             else{
-            	Messages.log(logger,"Use the default CppUnit plugin stylesheet.");
+            	Messages.log(listener,"Use the default CppUnit plugin stylesheet.");
             	cppUnitTransformer = new CppUnitTransformer();
             }
             
@@ -117,7 +117,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             final FilePath moduleRoot= multipleModuleRoots ? build.getProject().getWorkspace() : build.getProject().getModuleRoot();
             
             // Archiving CppunitFile into Junit files
-            CppUnitArchiver archiver = new CppUnitArchiver(logger, junitTargetFilePath, testResultsPattern, cppUnitTransformer);
+            CppUnitArchiver archiver = new CppUnitArchiver(listener, junitTargetFilePath, testResultsPattern, cppUnitTransformer);
             result = moduleRoot.act(archiver);
             if (!result) {
             	build.setResult(Result.FAILURE);
@@ -130,12 +130,12 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             
         } 
         catch (TransformerException te) {
-        	Messages.log(logger,"Error publishing cppunit results" + te.toString());
+        	Messages.log(listener,"Error publishing cppunit results" + te.toString());
         	build.setResult(Result.FAILURE);            
         }
 
          
-        Messages.log(logger,"End recording CppUnit tests results.");        
+        Messages.log(listener,"End recording CppUnit tests results.");        
         return result;
     }
 
@@ -224,9 +224,10 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     
     /**
      * Record the test results into the current build.
-     * @param junitFilePattern
-     * @param build
-     * @param listener
+     * @param build the cuurent build
+     * @param listener the current listener
+     * @param junitTargetFilePath the dest junit directory
+     * @param junitFilePattern the junit pattern
      * @return
      * @throws InterruptedException
      * @throws IOException

@@ -10,7 +10,7 @@ public abstract class AbstractWorkspaceTest {
     protected File parentFile;
     protected FilePath workspace;
 
-    public void createWorkspace() throws Exception {
+    protected void createWorkspace() throws Exception {
         parentFile = Util.createTempDir();
         workspace = new FilePath(parentFile);
         if (workspace.exists()) {
@@ -19,7 +19,7 @@ public abstract class AbstractWorkspaceTest {
         workspace.mkdirs();
     }
 
-    public void deleteWorkspace() throws Exception {
+    protected void deleteWorkspace() throws Exception {
         workspace.deleteRecursive();
     }
 }

@@ -2,13 +2,13 @@ package hudson.plugins.cppunit;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.model.BuildListener;
 import hudson.plugins.cppunit.util.Messages;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOException2;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Serializable;
 
 import javax.xml.transform.TransformerException;
@@ -25,14 +25,13 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
 
     private static final long serialVersionUID = 1L;
 
-    private final PrintStream logger;
+    private BuildListener listener;
     private final FilePath junitTargetFilePath;
     private CppUnitTransformer reportTransformer;
     private final String pattern;
-
-    public CppUnitArchiver(PrintStream logger, FilePath junitTargetFilePath, 
-    					    String pattern, CppUnitTransformer reportTransformer) throws TransformerException {
-        this.logger=logger;
+    
+    public CppUnitArchiver(BuildListener listener, FilePath junitTargetFilePath, String pattern, CppUnitTransformer reportTransformer) throws TransformerException {
+    	this.listener=listener;
     	this.junitTargetFilePath=junitTargetFilePath;
         this.pattern = pattern;
         this.reportTransformer=reportTransformer;
@@ -47,11 +46,11 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
 	                + pattern + "' relative to '"+ moduleRoot + "'."
 	                + "  Did you enter a pattern relative to the correct directory?"
 	                + "  Did you generate the XML report(s) for CppUnit?";		
-	            Messages.log(logger,msg);
+	            Messages.log(listener,msg);
 	            return false;
         }
                 
-        Messages.log(logger,"Processing "+cppunitFiles.length+ " files with the pattern '" + pattern + "'.");
+        Messages.log(listener,"Processing "+cppunitFiles.length+ " files with the pattern '" + pattern + "'.");
         for (String cppunitFileName : cppunitFiles) {
         	FilePath fileCppunitReport =  new FilePath(new File(moduleRoot, cppunitFileName));
             try {
@@ -67,7 +66,7 @@ public class CppUnitArchiver implements FilePath.FileCallable<Boolean>, Serializ
     /**
      * Return all CppUnit report files
      * 
-     * @param parentPath parent
+     * @param parentPath the parent directory
      * @return an array of strings
      */
     private String[] findCppUnitReports(File parentPath)  {

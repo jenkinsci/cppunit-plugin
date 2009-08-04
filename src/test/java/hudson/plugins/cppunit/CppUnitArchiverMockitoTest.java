@@ -2,16 +2,16 @@ package hudson.plugins.cppunit;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.eq;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 
 import java.io.File;
-import java.io.PrintStream;
 
 import junit.framework.Assert;
 
@@ -22,16 +22,16 @@ import org.junit.Test;
 public class CppUnitArchiverMockitoTest extends AbstractWorkspaceTest {
 
     private VirtualChannel virtualChannel;
-    private PrintStream logger;
+    private BuildListener listener;
     private CppUnitTransformer transformer;
     private FilePath junitTargetFilePath;
 	
     @Before
     public void setUp() throws Exception {
-        super.createWorkspace();        
+        createWorkspace();        
         virtualChannel=mock(VirtualChannel.class);
         transformer=mock(CppUnitTransformer.class);
-        logger=mock(PrintStream.class);
+        listener=mock(BuildListener.class);
 		File parentTargetJunitFile = Util.createTempDir();
 		junitTargetFilePath = new FilePath(parentTargetJunitFile);
         if (junitTargetFilePath.exists()) {
@@ -49,13 +49,13 @@ public class CppUnitArchiverMockitoTest extends AbstractWorkspaceTest {
     
     @Test
     public void testNoCppUnitReportsWorkspace() throws Exception {
-    	CppUnitArchiver cppunitArchiver = new CppUnitArchiver( logger, junitTargetFilePath, "*.xml",transformer);
+    	CppUnitArchiver cppunitArchiver = new CppUnitArchiver(listener, junitTargetFilePath, "*.xml",transformer);
         Boolean result = cppunitArchiver.invoke(new File(workspace.toURI()), virtualChannel);
         assertFalse("The archiver did not return false when it could not find any files", result);
     }
     
     private boolean processCppUnitWorkpace(int nbFiles)throws Exception {  
-        CppUnitArchiver cppunitArchiver = new CppUnitArchiver(logger, junitTargetFilePath, "*.xml",transformer);
+        CppUnitArchiver cppunitArchiver = new CppUnitArchiver(listener, junitTargetFilePath, "*.xml",transformer);
         Boolean result = cppunitArchiver.invoke(new File(workspace.toURI()), virtualChannel);
         verify(transformer, times(nbFiles)).transform(any(FilePath.class), eq(junitTargetFilePath));        
         return result;
