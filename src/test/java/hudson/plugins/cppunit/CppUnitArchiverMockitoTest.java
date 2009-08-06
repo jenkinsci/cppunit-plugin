@@ -6,12 +6,15 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 
 import junit.framework.Assert;
 
@@ -32,6 +35,7 @@ public class CppUnitArchiverMockitoTest extends AbstractWorkspaceTest {
         virtualChannel=mock(VirtualChannel.class);
         transformer=mock(CppUnitTransformer.class);
         listener=mock(BuildListener.class);
+        when(listener.getLogger()).thenReturn(new PrintStream(new ByteArrayOutputStream())); 
 		File parentTargetJunitFile = Util.createTempDir();
 		junitTargetFilePath = new FilePath(parentTargetJunitFile);
         if (junitTargetFilePath.exists()) {
