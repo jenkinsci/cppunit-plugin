@@ -104,8 +104,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             
             
     		//Create the temporary target junit dir
-    		File parentTargetJunitFile = Util.createTempDir();
-    		FilePath junitTargetFilePath = new FilePath(parentTargetJunitFile);
+    		FilePath junitTargetFilePath = new FilePath(build.getProject().getWorkspace(),"cppunitpluginTemp");
             if (junitTargetFilePath.exists()) {
             	junitTargetFilePath.deleteRecursive();
             }
@@ -158,7 +157,8 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     public static final class CppUnitDescriptor extends BuildStepDescriptor<Publisher> {
 
         public CppUnitDescriptor() {
-            super(CppUnitPublisher.class);          
+            super(CppUnitPublisher.class);
+            load();	          
         }
 
         @Override
