@@ -4,21 +4,5 @@
 		 description="${%description.pattern}">
       <f:textbox name="cppunit_reports.pattern" value="${instance.testResultsPattern}" />
    </f:entry>
-
-    <f:advanced>
-      <f:nested>
-	      <table>	
-		      <f:optionalBlock name="cppunit_reports.useCustomStylesheet" 
-				       title="Use a custom stylesheet to convert CppUnit result report to JUnit test result report"
-		               help="${rootURL}/plugin/cppunit/help-customstylesheet.html" checked="${instance.getUseCustomStylesheet()}">
-		        <f:entry title="Custom stylesheet directory">
-		          <f:textbox name="cppunit_reports.customStylesheet" 
-		          			 value="${instance.customStylesheet}"
-		          			 checkUrl="'${rootURL}/publisher/CppUnitPublisher/checkValidCustomStylesheetLocation?job=${it.fullName}&amp;value='+escape(this.value)"/>
-		        </f:entry>
-		      </f:optionalBlock>
-	      </table>
-      </f:nested>
-	</f:advanced>
 	
 </j:jelly>

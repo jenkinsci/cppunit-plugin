@@ -10,7 +10,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.plugins.cppunit.util.Messages;
 import hudson.remoting.VirtualChannel;
@@ -19,21 +18,18 @@ import hudson.tasks.Publisher;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
-import hudson.util.FormFieldValidator;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * Class that records CppUnit test reports into Hudson.
@@ -51,30 +47,17 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
     private String testResultsPattern;
     
-    private boolean useCustomStylesheet;
-           
-    private String customStylesheet;
-
     private static final Logger LOG = Logger.getLogger(CppUnitPublisher.class.getName());    
 
-    @DataBoundConstructor
-    public CppUnitPublisher(String testResultsPattern, boolean useCustomStylesheet, String customStylesheet) {
+    
+    @DataBoundConstructor	
+    public CppUnitPublisher(String testResultsPattern) {
         this.testResultsPattern = testResultsPattern;
-        this.useCustomStylesheet=useCustomStylesheet;
-        this.customStylesheet=customStylesheet;
     }
 
     public String getTestResultsPattern() {
         return testResultsPattern;
     }
-
-    public boolean getUseCustomStylesheet() {
-		return useCustomStylesheet;
-	}
-    
-	public String getCustomStylesheet() {
-		return customStylesheet;
-	}
 
 	@Override
     public Action getProjectAction(hudson.model.Project project) {
@@ -92,16 +75,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
                         
             //Build the transformer
             CppUnitTransformer cppUnitTransformer;            
-            if (useCustomStylesheet && customStylesheet!=null){
-            	Messages.log(listener,"Use the specified stylesheet.");
-            	FilePath customStylesheetFilePath = build.getParent().getModuleRoot().child(customStylesheet);
-            	cppUnitTransformer = new CppUnitTransformer(customStylesheetFilePath);	
-            }
-            else{
-            	Messages.log(listener,"Use the default CppUnit plugin stylesheet.");
-            	cppUnitTransformer = new CppUnitTransformer();
-            }
-            
+            cppUnitTransformer = new CppUnitTransformer();
             
     		//Create the temporary target junit dir
     		FilePath junitTargetFilePath = new FilePath(build.getProject().getWorkspace(),"cppunitpluginTemp");
@@ -178,48 +152,8 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
         @Override
         public Publisher newInstance(StaplerRequest req) throws FormException {
-        	return new CppUnitPublisher( req.getParameter("cppunit_reports.pattern"), 
-            							(req.getParameter("cppunit_reports.useCustomStylesheet")!=null),
-            							req.getParameter("cppunit_reports.customStylesheet"));
-            
-        }
-        
-        
-        
-        /**
-         * Checks if the custom stylesheet location is valid
-         */
-        public void doCheckValidCustomStylesheetLocation( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-            new FormFieldValidator(req, rsp, true) {
-                public void check() throws IOException, ServletException {
-                    
-                	String value = Util.fixEmptyAndTrim(request.getParameter("value"));
-                	if (value!=null){
-                	  		
-                		String job = Util.fixEmptyAndTrim(request.getParameter("job"));                	
-                		FilePath workspace = CppUnitPublisher.getWorkspace(Hudson.getInstance().getItemByFullName(job, AbstractProject.class));
-                		File f =null;
-                		try{
-                			f = new File(new FilePath(workspace,value).toURI());
-                		}
-                		catch (InterruptedException ie){
-                			error(value+" is not a valid file.");
-                			return;                		
-                		}
-                		
-                		if (!f.exists()) {
-                			error(value+" is not a valid file.");
-                			return;
-                		}
-                	}
-                	else {
-                		error(" The stylesheet directory is mandatory.");
-                	}
-                	
-                    ok();
-                }
-            }.process();
-        }
+        	return new CppUnitPublisher( req.getParameter("cppunit_reports.pattern"));            
+        }                
     }
     
     /**

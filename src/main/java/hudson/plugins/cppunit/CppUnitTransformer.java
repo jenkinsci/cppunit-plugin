@@ -24,10 +24,7 @@ import org.xml.sax.SAXException;
  */
 public class CppUnitTransformer implements Serializable{
 
-    /**
-	 * SerialNumber UID
-	 */
-	private static final long serialVersionUID = 1111L;
+	private static final long serialVersionUID = 1L;
 
 	private transient Transformer cppunitXMLTransformer;    
     
@@ -35,17 +32,11 @@ public class CppUnitTransformer implements Serializable{
     private static final String JUNIT_FILE_PREFIX = "TEST-";
     
     public static final String CPPUNIT_TO_JUNIT_XSL = "cppunit-to-junit.xsl";    
-	
-    private FilePath customStylesheet;
+
 
     public CppUnitTransformer(){
-    	this.customStylesheet=null;
     }
-    
-    public CppUnitTransformer(FilePath customStylesheet){
-    	this.customStylesheet=customStylesheet;
-    }
-    
+
     /**
      * Transform the cppunit file into several a junit files in the output path
      * 
@@ -70,14 +61,7 @@ public class CppUnitTransformer implements Serializable{
 
     	TransformerFactory transformerFactory = TransformerFactory.newInstance();
     	StreamSource streamSourceXSL;
-    	if (customStylesheet!=null){    			
-    		 streamSourceXSL = new StreamSource(new File(customStylesheet.toURI()));
-    			
-    	}
-    	else {
-    		streamSourceXSL = new StreamSource(this.getClass().getResourceAsStream(CPPUNIT_TO_JUNIT_XSL));
-    	}
-    				
+    	streamSourceXSL = new StreamSource(this.getClass().getResourceAsStream(CPPUNIT_TO_JUNIT_XSL));
     	cppunitXMLTransformer = transformerFactory.newTransformer(streamSourceXSL);
     }    	
 }
