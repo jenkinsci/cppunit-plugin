@@ -42,12 +42,12 @@ public class CppUnitArchiver implements FilePath.FileCallable<Result>, Serializa
     }
 
     /** {@inheritDoc} */
-    public Result invoke(File moduleRoot, VirtualChannel channel) throws IOException {
+    public Result invoke(File basedir, VirtualChannel channel) throws IOException {
         
-        String[] cppunitFiles = findCppUnitReports(moduleRoot);        
+        String[] cppunitFiles = findCppUnitReports(basedir);        
         if (cppunitFiles.length==0){
 	            String msg = "No CppUnit test report file(s) were found with the pattern '"
-	                + pattern + "' relative to '"+ moduleRoot + "'."
+	                + pattern + "' relative to '"+ basedir + "'."
 	                + "  Did you enter a pattern relative to the correct directory?"
 	                + "  Did you generate the XML report(s) for CppUnit?";		
 	            Messages.log(listener,msg);
@@ -58,34 +58,47 @@ public class CppUnitArchiver implements FilePath.FileCallable<Result>, Serializa
         
         boolean hasInvalidateFiles = false;
         for (String cppunitFileName : cppunitFiles) {
-        	
-        	FilePath fileCppunitReport =  new FilePath(new File(moduleRoot, cppunitFileName));
-        	
-        	if (validateCppunitResultFile(fileCppunitReport)){        	
-	            try {
-	            	reportTransformer.transform(fileCppunitReport, junitTargetFilePath);            	
-	            } 
-	            catch (Exception te) {
-	                throw new IOException2("Could not transform the CppUnit report.", te);
-	            }
-        	}
-        	else {
+
+        	File fileCppunitReportFile  = new File(basedir, cppunitFileName);
+
+        	if (fileCppunitReportFile.length()==0){
+        		//Ignore the empty result file (some reason)
+        		String msg = "[WARNING] - The file '"+fileCppunitReportFile.getPath()+"' is empty. This file has been ignored.";
+        		Messages.log(listener,msg);
+        		continue;
+        	}  
+        	        	
+        	if (!validateCppunitResultFile(fileCppunitReportFile)){
+        		
+        		//register there are unvalid files
         		hasInvalidateFiles=true;
-        	}
+        		
+        		//Ignore unvalid files
+    			Messages.log(listener, "[WARNING] - The file '" + fileCppunitReportFile  + "' is an invalid file. It has been ignored.");
+        		continue;
+        	}  
+
+        	
+            try {
+            	FilePath fileCppunitReport =  new FilePath(fileCppunitReportFile);
+            	reportTransformer.transform(fileCppunitReport, junitTargetFilePath);            	
+            } 
+            catch (Exception te) {
+                throw new IOException2("Could not transform the CppUnit report.", te);
+            }
         }
         
         return hasInvalidateFiles?Result.UNSTABLE:Result.SUCCESS;
     }
 
-	private boolean validateCppunitResultFile(FilePath fileCppunitReport)
+	private boolean validateCppunitResultFile(File fileCppunitReportFile)
 			throws FactoryConfigurationError {
 		try{
 			DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			parser.parse(new File(fileCppunitReport.toURI()));
+			parser.parse(fileCppunitReportFile);
 			return true;
 		}
 		catch (Exception e){
-			Messages.log(listener, "[WARNING] - The file '" + fileCppunitReport  + "' is an invalid file. It has been ignored.");
 			return false;
 		}
 	}
