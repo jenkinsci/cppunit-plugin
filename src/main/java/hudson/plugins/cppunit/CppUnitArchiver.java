@@ -85,7 +85,7 @@ public class CppUnitArchiver implements FilePath.FileCallable<Result>, Serializa
 			return true;
 		}
 		catch (Exception e){
-			Messages.log(listener, "The file '" + fileCppunitReport  + "' is an invalid file. It has been ignored.");
+			Messages.log(listener, "[WARNING] - The file '" + fileCppunitReport  + "' is an invalid file. It has been ignored.");
 			return false;
 		}
 	}

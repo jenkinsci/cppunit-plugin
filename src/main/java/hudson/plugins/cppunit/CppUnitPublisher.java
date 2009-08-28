@@ -7,13 +7,13 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.plugins.cppunit.util.Messages;
 import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
@@ -22,20 +22,17 @@ import hudson.tasks.test.TestResultProjectAction;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 import javax.xml.transform.TransformerException;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Class that records CppUnit test reports into Hudson.
  * 
  * @author Gregory Boissinot
- * 20090323 Correction of the java.io.NotSerializableException with a slave  
  *   
  */
 public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializable {
@@ -45,19 +42,25 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     @Extension
     public static final CppUnitDescriptor DESCRIPTOR = new CppUnitDescriptor();
 
-    private String testResultsPattern;
+    private String testResultsPattern = null;
     
-    private static final Logger LOG = Logger.getLogger(CppUnitPublisher.class.getName());    
+    private boolean useWorkspaceBaseDir = false;
 
-    
-    @DataBoundConstructor	
-    public CppUnitPublisher(String testResultsPattern) {
-        this.testResultsPattern = testResultsPattern;
-    }
+	public String getTestResultsPattern() {
+		return testResultsPattern;
+	}
 
-    public String getTestResultsPattern() {
-        return testResultsPattern;
-    }
+	public void setTestResultsPattern(String testResultsPattern) {
+		this.testResultsPattern = testResultsPattern;
+	}
+
+	public boolean isUseWorkspaceBaseDir() {
+		return useWorkspaceBaseDir;
+	}
+
+	public void setUseWorkspaceBaseDir(boolean useWorkspaceBaseDir) {
+		this.useWorkspaceBaseDir = useWorkspaceBaseDir;
+	}
 
 	@Override
     public Action getProjectAction(hudson.model.Project project) {
@@ -71,7 +74,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     	boolean recordingResult = false;
         try {
         	   	
-        	Messages.log(listener,"Recording CppUnit tests results.");
+        	Messages.log(listener,"Recording of the CppUnit tests results.");
                         
             //Build the transformer
             CppUnitTransformer cppUnitTransformer;            
@@ -84,32 +87,38 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             }
             junitTargetFilePath.mkdirs();            
             
-            //Compute module roots
-            final FilePath[] moduleRoots= build.getProject().getModuleRoots();
-            final boolean multipleModuleRoots= moduleRoots != null && moduleRoots.length > 1;
-            final FilePath moduleRoot= multipleModuleRoots ? build.getProject().getWorkspace() : build.getProject().getModuleRoot();
+            //Compute the basedir
+            FilePath basedir = null;
+            if (useWorkspaceBaseDir){
+            	basedir=build.getWorkspace();
+            }
+            else{
+                FilePath[] moduleRoots= build.getModuleRoots();
+                boolean multipleModuleRoots= moduleRoots != null && moduleRoots.length > 1;
+                basedir= multipleModuleRoots ? build.getWorkspace() : build.getModuleRoot();	
+            }            
             
             // Archiving CppunitFile into Junit files
             CppUnitArchiver archiver = new CppUnitArchiver(listener, junitTargetFilePath, testResultsPattern, cppUnitTransformer);
-            Result result = moduleRoot.act(archiver);
+            Result result = basedir.act(archiver);
             
             // set the build status to SUCCESSFUL or UNSTABLE
             build.setResult(result);
             
             //Recording the tests ( the build status can change)
-            recordingResult = recordTestResult(build, listener, junitTargetFilePath, "TEST-*.xml");            
+            recordingResult = recordTestResult(build, basedir, listener, junitTargetFilePath, "TEST-*.xml");            
             
             //Detroy temporary target junit dir           
             junitTargetFilePath.deleteRecursive();
             
         } 
         catch (TransformerException te) {
-        	Messages.log(listener,"Error publishing cppunit results" + te.toString());
+        	Messages.log(listener,"[Error]- Recording of the CppUnit tests results. " + te.toString());
         	build.setResult(Result.FAILURE);            
         }
 
          
-        Messages.log(listener,"End recording CppUnit tests results.");        
+        Messages.log(listener,"End recording of the CppUnit tests results.");        
         return recordingResult;
     }
 
@@ -120,14 +129,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
         return DESCRIPTOR;        
     }
     
-    private static FilePath getWorkspace (AbstractProject p) {
-        try {
-            return p.getWorkspace();
-        } catch (NullPointerException e) {
-            return null;
-        }
-    }
- 
+
 
     public static final class CppUnitDescriptor extends BuildStepDescriptor<Publisher> {
 
@@ -153,7 +155,9 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
         @Override
         public Publisher newInstance(StaplerRequest req) throws FormException {
-        	return new CppUnitPublisher( req.getParameter("cppunit_reports.pattern"));            
+        	CppUnitPublisher pub= new CppUnitPublisher();
+        	req.bindParameters(pub,"cppunit_reports.");
+        	return pub;
         }                
     }
     
@@ -168,6 +172,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
      * @throws IOException
      */
     private boolean recordTestResult(final AbstractBuild<?,?> build, 
+    								 final FilePath baseDirTestResult,
     								 final BuildListener listener, 
     								 final FilePath junitTargetFilePath, 
     								 final String junitFilePattern)
@@ -184,7 +189,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             if (existingAction != null) {
                 existingTestResults = existingAction.getResult();
             }
-            TestResult result = getTestResult(junitTargetFilePath, junitFilePattern, build, existingTestResults, buildTime);
+            TestResult result = getTestResult(junitTargetFilePath, junitFilePattern, baseDirTestResult, existingTestResults, buildTime);
 
             if (existingAction == null) {
                 action = new TestResultAction(build, result, listener);
@@ -221,7 +226,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     /**
      * Collect the test results from the files
      * @param junitFilePattern
-     * @param build
+     * @param baseDirTestResult
      * @param existingTestResults existing test results to add results to
      * @param buildTime
      * @return a test result
@@ -230,7 +235,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
      */
     private TestResult getTestResult(final FilePath temporaryJunitFilePath, 
     								 final String junitFilePattern,
-    								 final AbstractBuild<?, ?> build,
+    								 final FilePath baseDirTestResult,
     								 final TestResult existingTestResults, 
     								 final long buildTime) 
     				throws IOException, InterruptedException {
@@ -238,7 +243,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     	
     	final File temporaryJunitDirFile = new File(temporaryJunitFilePath.toURI());
     	
-        TestResult result = build.getProject().getWorkspace().act(new FileCallable<TestResult>() {
+        TestResult result = baseDirTestResult.act(new FileCallable<TestResult>() {
             public TestResult invoke(File ws, VirtualChannel channel) throws IOException {
             	
                 FileSet fs = Util.createFileSet(temporaryJunitDirFile, junitFilePattern);
@@ -257,5 +262,9 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             }
         });
         return result;
-    }        
+    }
+
+	public BuildStepMonitor getRequiredMonitorService() {
+		return BuildStepMonitor.STEP;
+	}        
 }

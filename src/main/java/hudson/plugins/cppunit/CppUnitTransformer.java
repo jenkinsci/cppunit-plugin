@@ -33,10 +33,6 @@ public class CppUnitTransformer implements Serializable{
     
     public static final String CPPUNIT_TO_JUNIT_XSL = "cppunit-to-junit.xsl";    
 
-
-    public CppUnitTransformer(){
-    }
-
     /**
      * Transform the cppunit file into several a junit files in the output path
      * 

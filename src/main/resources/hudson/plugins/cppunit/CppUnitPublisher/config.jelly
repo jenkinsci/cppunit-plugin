@@ -2,7 +2,13 @@
 
    <f:entry title="Test report XMLs"
 		 description="${%description.pattern}">
-      <f:textbox name="cppunit_reports.pattern" value="${instance.testResultsPattern}" />
+      <f:textbox name="cppunit_reports.testResultsPattern" value="${instance.testResultsPattern}" />            
    </f:entry>
-	
+   
+	   
+   <f:entry title="" description="${%description.basedir}">
+      <f:checkbox name="cppunit_reports.useWorkspaceBaseDir" checked="${instance.useWorkspaceBaseDir}" />
+      <label class="attach-previous">Use the workspace root as the basedir</label>
+   </f:entry>
+   	
 </j:jelly>
