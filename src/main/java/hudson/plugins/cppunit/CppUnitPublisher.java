@@ -68,7 +68,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
     	
-        boolean result=false;
+    	boolean recordingResult = false;
         try {
         	   	
         	Messages.log(listener,"Recording CppUnit tests results.");
@@ -91,12 +91,13 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             
             // Archiving CppunitFile into Junit files
             CppUnitArchiver archiver = new CppUnitArchiver(listener, junitTargetFilePath, testResultsPattern, cppUnitTransformer);
-            result = moduleRoot.act(archiver);
-            if (!result) {
-            	build.setResult(Result.FAILURE);
-            } else {
-            	 result = recordTestResult(build, listener, junitTargetFilePath, "TEST-*.xml");
-            }
+            Result result = moduleRoot.act(archiver);
+            
+            // set the build status to SUCCESSFUL or UNSTABLE
+            build.setResult(result);
+            
+            //Recording the tests ( the build status can change)
+            recordingResult = recordTestResult(build, listener, junitTargetFilePath, "TEST-*.xml");            
             
             //Detroy temporary target junit dir           
             junitTargetFilePath.deleteRecursive();
@@ -109,7 +110,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 
          
         Messages.log(listener,"End recording CppUnit tests results.");        
-        return result;
+        return recordingResult;
     }
 
  

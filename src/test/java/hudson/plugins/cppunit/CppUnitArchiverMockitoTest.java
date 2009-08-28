@@ -1,6 +1,5 @@
 package hudson.plugins.cppunit;
 
-import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -10,10 +9,13 @@ import static org.mockito.Mockito.when;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.remoting.VirtualChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 
 import junit.framework.Assert;
@@ -54,15 +56,14 @@ public class CppUnitArchiverMockitoTest extends AbstractWorkspaceTest {
     @Test
     public void testNoCppUnitReportsWorkspace() throws Exception {
     	CppUnitArchiver cppunitArchiver = new CppUnitArchiver(listener, junitTargetFilePath, "*.xml",transformer);
-        Boolean result = cppunitArchiver.invoke(new File(workspace.toURI()), virtualChannel);
-        assertFalse("The archiver did not return false when it could not find any files", result);
+        Result result = cppunitArchiver.invoke(new File(workspace.toURI()), virtualChannel);
+        Assert.assertEquals("The archiver did not return false when it could not find any files",Result.FAILURE, result);
     }
     
-    private boolean processCppUnitWorkpace(int nbFiles)throws Exception {  
+    private void processCppUnitWorkpace(int nbFiles)throws Exception {  
         CppUnitArchiver cppunitArchiver = new CppUnitArchiver(listener, junitTargetFilePath, "*.xml",transformer);
-        Boolean result = cppunitArchiver.invoke(new File(workspace.toURI()), virtualChannel);
+        Result result = cppunitArchiver.invoke(new File(workspace.toURI()), virtualChannel);
         verify(transformer, times(nbFiles)).transform(any(FilePath.class), eq(junitTargetFilePath));        
-        return result;
     }
 
     //--- Workspace root
@@ -70,77 +71,82 @@ public class CppUnitArchiverMockitoTest extends AbstractWorkspaceTest {
     //--XML files
     @Test
     public void testInovke0TransformWithXmlAtWorkpaceRoot() throws Exception {  	
-    	boolean result = processCppUnitWorkpace(0);
-    	Assert.assertFalse(result);
+    	processCppUnitWorkpace(0);    
     }
+    
+    private void createTempFileValidContent(String extension) throws Exception {      	
+    	InputStream is = this.getClass().getResourceAsStream("validation/validResultFile.xml");
+    	StringBuffer sb= new StringBuffer();
+    	int c;
+    	while ((c=is.read())!=-1){
+    		sb.append((char)c);
+    	}
+    	workspace.createTextTempFile("cppunit-report", extension, sb.toString());
+    }
+    
     @Test
-    public void testInovke1TransformWithXmlAtWorkpaceRoot() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");    
-        boolean result = processCppUnitWorkpace(1);
-        Assert.assertTrue(result);
-    }        
+    public void testInovke1TransformWithXmlAtWorkpaceRoot() throws Exception {  	        
+    	createTempFileValidContent(".xml");
+        processCppUnitWorkpace(1);       
+    }
+    
     @Test
     public void testInovke2TransformWithXmlAtWorkpaceRoot() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");    
-        boolean result = processCppUnitWorkpace(2);
-        Assert.assertTrue(result);
+    	createTempFileValidContent(".xml");
+    	createTempFileValidContent(".xml");  
+        processCppUnitWorkpace(2);        
     }
+    
     @Test
     public void testInovke3TransformWithXmlAtWorkpaceRoot() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");    
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");  
-        boolean result = processCppUnitWorkpace(3);
-        Assert.assertTrue(result);
+    	createTempFileValidContent(".xml");
+        createTempFileValidContent(".xml");    
+        createTempFileValidContent(".xml");  
+        processCppUnitWorkpace(3);
     }    
     
     //--Text files
     @Test
     public void testInovke1TransformWithTextAtWorkpaceRoot() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");  
-        boolean result = processCppUnitWorkpace(0);
-        Assert.assertFalse(result);
+    	createTempFileValidContent(".txt");
+        processCppUnitWorkpace(0);
     }    
+    
     @Test
     public void testInovke2TransformWithTextAtWorkpaceRoot() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");    
-        boolean result = processCppUnitWorkpace(0);
-        Assert.assertFalse(result);
+    	createTempFileValidContent(".txt");
+    	createTempFileValidContent(".txt");  
+        processCppUnitWorkpace(0);
     }
     @Test
     public void testInovke3TransformWithTextAtWorkpaceRoot() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");    
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");
-        boolean result = processCppUnitWorkpace(0);
-        Assert.assertFalse(result);
+    	createTempFileValidContent(".txt");
+    	createTempFileValidContent(".txt");
+    	createTempFileValidContent(".txt");
+        processCppUnitWorkpace(0);
     }
 
     //--XML and Text files
     @Test
     public void testInovke1TransformMixedAtWorkpace() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");    
-        boolean result = processCppUnitWorkpace(1);
-        Assert.assertTrue(result);
+    	createTempFileValidContent(".xml");
+        createTempFileValidContent(".txt");  
+        processCppUnitWorkpace(1);
     }
     @Test
     public void testInovke2TransformMixedAtWorkpace() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");    
-        boolean result = processCppUnitWorkpace(2);
-        Assert.assertTrue(result);
+    	createTempFileValidContent(".xml");
+    	createTempFileValidContent(".xml");
+    	createTempFileValidContent(".txt");    
+        processCppUnitWorkpace(2);
+
     }
     @Test
     public void testInovke3TransformMixedAtWorkpace() throws Exception {  	
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".xml", "content");
-        workspace.createTextTempFile("cppunit-report", ".txt", "content");    
-        boolean result = processCppUnitWorkpace(3);
-        Assert.assertTrue(result);
+    	createTempFileValidContent(".xml");
+    	createTempFileValidContent(".xml");
+    	createTempFileValidContent(".xml");
+    	createTempFileValidContent(".txt");    
+        processCppUnitWorkpace(3);
     }    
 }
