@@ -265,6 +265,6 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
     }
 
 	public BuildStepMonitor getRequiredMonitorService() {
-		return BuildStepMonitor.STEP;
+		return BuildStepMonitor.NONE;
 	}        
 }
