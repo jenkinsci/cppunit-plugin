@@ -7,6 +7,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
@@ -15,6 +16,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.TestResultProjectAction;
@@ -25,6 +27,7 @@ import java.io.Serializable;
 
 import javax.xml.transform.TransformerException;
 
+import net.sf.json.JSONObject;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
 import org.kohsuke.stapler.StaplerRequest;
@@ -35,7 +38,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Gregory Boissinot
  *   
  */
-public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializable {
+public class CppUnitPublisher extends Recorder implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -63,7 +66,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
 	}
 
 	@Override
-    public Action getProjectAction(hudson.model.Project project) {
+    public Action getProjectAction(AbstractProject<?,?> project) {
          return new TestResultProjectAction(project);
     }
 
@@ -81,7 +84,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
             cppUnitTransformer = new CppUnitTransformer();
             
     		//Create the temporary target junit dir
-    		FilePath junitTargetFilePath = new FilePath(build.getProject().getWorkspace(),"cppunitpluginTemp");
+    		FilePath junitTargetFilePath = new FilePath(build.getWorkspace(),"cppunitpluginTemp");
             if (junitTargetFilePath.exists()) {
             	junitTargetFilePath.deleteRecursive();
             }
@@ -154,7 +157,7 @@ public class CppUnitPublisher extends hudson.tasks.Publisher implements Serializ
         }
 
         @Override
-        public Publisher newInstance(StaplerRequest req) throws FormException {
+        public Publisher newInstance(StaplerRequest req, JSONObject formData) throws FormException {
         	CppUnitPublisher pub= new CppUnitPublisher();
         	req.bindParameters(pub,"cppunit_reports.");
         	return pub;
