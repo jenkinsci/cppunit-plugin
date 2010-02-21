@@ -41,11 +41,11 @@ public class CppUnitXSLTest extends AbstractXUnitXSLTest {
 
     @Test
     public void adaTtestcase3() throws Exception {
-        processTransformation("ada/ada-cppunit-zeroFailureAndSucces.xml", "ada/junit-ada-cppunit-zeroFailureAndSuccess.xml");
+        processTransformation("ada/ada-cppunit-zeroFailureAndSuccess.xml", "ada/junit-ada-cppunit-zeroFailureAndSuccess.xml");
     }
 
-        @Test
+    @Test
     public void adaTtestcase4() throws Exception {
-        processTransformation("ada/ada-cppunit-zeroSucces.xml", "ada/junit-ada-cppunit-zeroSuccess.xml");
+        processTransformation("ada/ada-cppunit-zeroSuccess.xml", "ada/junit-ada-cppunit-zeroSuccess.xml");
     }
 }
