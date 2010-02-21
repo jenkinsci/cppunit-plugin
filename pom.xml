@@ -1,93 +1,98 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-   <parent>
-      <groupId>org.jvnet.hudson.plugins</groupId>
-      <artifactId>plugin</artifactId>
-      <version>1.330</version>
-      <relativePath>../pom.xml</relativePath>
-   </parent>
+    <parent>
+        <groupId>org.jvnet.hudson.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>1.347</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-   <artifactId>cppunit</artifactId>
-   <version>1.1.2-SNAPSHOT</version>
-   <packaging>hpi</packaging>
-   <name>Hudson cppunit plugin</name>
-   <url>http://wiki.hudson-ci.org/display/HUDSON/CppUnit+Plugin</url>
+    <artifactId>cppunit</artifactId>
+    <version>1.2-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+    <name>Hudson cppunit plugin</name>
+    <url>http://wiki.hudson-ci.org/display/HUDSON/CppUnit+Plugin</url>
 
-   <dependencies>
-      <dependency>
-         <groupId>xmlunit</groupId>
-         <artifactId>xmlunit</artifactId>
-         <version>1.1</version>
-         <scope>test</scope>
-      </dependency>
+    <dependencies>
 
-      <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-core</artifactId>
-         <version>1.8.0</version>
-         <scope>test</scope>
-      </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson.plugins</groupId>
+            <artifactId>xunit</artifactId>
+            <version>0.6-SNAPSHOT</version>
+        </dependency>
 
-      <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-all</artifactId>
-         <version>1.8.0</version>
-         <scope>test</scope>
-      </dependency>
-   </dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
 
-   <developers>
-      <developer>
-         <id>gbois</id>
-         <name>Gregory Boissinot</name>
-         <email>gregory.boissinot@gmail.com</email>
-         <timezone>+1</timezone>
-      </developer>
-   </developers>
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-   <profiles>
-      <profile>
-         <id>it</id>
-         <build>
-            <resources>
-	             <resource>
-		              <directory>${basedir}/src/ittest/resources</directory>
-	             </resource>
-            </resources>
+    <developers>
+        <developer>
+            <id>gbois</id>
+            <name>Gregory Boissinot</name>
+            <email>gregory.boissinot@gmail.com</email>
+            <timezone>+1</timezone>
+            <roles>
+                <role>Project owner</role>
+                <role>Project developer</role>
+            </roles>
+        </developer>
+    </developers>
 
-            <testResources>
-               <testResource>
-                  <directory>${basedir}/src/test/resources</directory>
-               </testResource>
+    <profiles>
+        <profile>
+            <id>it</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>${basedir}/src/ittest/resources</directory>
+                    </resource>
+                </resources>
 
-               <testResource>
-                  <directory>${basedir}/src/ittest/resources</directory>
-               </testResource>
-            </testResources>
+                <testResources>
+                    <testResource>
+                        <directory>${basedir}/src/test/resources</directory>
+                    </testResource>
 
-            <plugins>
-               <plugin>
-                  <groupId>org.codehaus.mojo</groupId>
-                  <artifactId>build-helper-maven-plugin</artifactId>
-                  <version>1.3</version>
-                  <executions>
-                     <execution>
-                        <id>add-test-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                           <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                           <sources>
-                              <source>${basedir}/src/ittest/java</source>
-                           </sources>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-   </profiles>
+                    <testResource>
+                        <directory>${basedir}/src/ittest/resources</directory>
+                    </testResource>
+                </testResources>
+
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.3</version>
+                        <executions>
+                            <execution>
+                                <id>add-test-source</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>${basedir}/src/ittest/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
