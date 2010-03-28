@@ -1,5 +1,7 @@
 package hudson.plugins.cppunit;
 
+import com.thalesgroup.hudson.plugins.xunit.XUnitPublisher;
+import com.thalesgroup.hudson.plugins.xunit.types.XUnitType;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
 
@@ -10,14 +12,16 @@ public class CppUnitPublisher extends Recorder implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private transient String testResultsPattern = null;
+    private String testResultsPattern = null;
 
-    private transient boolean useWorkspaceBaseDir = false;
+    private boolean useWorkspaceBaseDir = false;
 
+    @SuppressWarnings("unused")
     public String getTestResultsPattern() {
         return testResultsPattern;
     }
 
+    @SuppressWarnings("unused")
     public boolean isUseWorkspaceBaseDir() {
         return useWorkspaceBaseDir;
     }
@@ -27,7 +31,7 @@ public class CppUnitPublisher extends Recorder implements Serializable {
     }
 
     private Object readResolve() {
-        return new CppUnitType(testResultsPattern, true, true);
+        return new XUnitPublisher(new XUnitType[]{new CppUnitType(testResultsPattern, false, true)});
     }
 
 }
