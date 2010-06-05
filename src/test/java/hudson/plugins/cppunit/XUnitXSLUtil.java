@@ -2,17 +2,22 @@ package hudson.plugins.cppunit;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
 public class XUnitXSLUtil {
 
 
-    public static String readXmlAsString(String resourceName)
+    public static String readXmlAsString(InputStream input)
             throws IOException {
         String xmlString = "";
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(XUnitXSLUtil.class.getResourceAsStream(resourceName)));
+        if (input == null) {
+            throw new IOException("The input stream object is null.");
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         String line = reader.readLine();
         while (line != null) {
             xmlString += line + "\n";
@@ -22,5 +27,6 @@ public class XUnitXSLUtil {
 
         return xmlString;
     }
+
 
 }

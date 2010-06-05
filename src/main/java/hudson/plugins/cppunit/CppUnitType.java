@@ -1,7 +1,9 @@
 package hudson.plugins.cppunit;
 
+
 import com.thalesgroup.hudson.plugins.xunit.types.XUnitType;
 import com.thalesgroup.hudson.plugins.xunit.types.XUnitTypeDescriptor;
+import com.thalesgroup.hudson.library.tusarconversion.TestsTools;
 import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -12,14 +14,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class CppUnitType extends XUnitType {
 
-
     @DataBoundConstructor
     public CppUnitType(String pattern, boolean faildedIfNotNew, boolean deleteJUnitFiles) {
-        super(pattern, faildedIfNotNew, deleteJUnitFiles);
-    }
-
-    public String getXsl() {
-        return "cppunit-to-junit.xsl";
+        super(TestsTools.CPPUNIT, pattern, faildedIfNotNew, deleteJUnitFiles);
     }
 
     public XUnitTypeDescriptor<?> getDescriptor() {
@@ -35,12 +32,11 @@ public class CppUnitType extends XUnitType {
 
         @Override
         public String getDisplayName() {
-            return Messages.cppunit_label();
+            return TestsTools.CPPUNIT.getLabel();
         }
 
         public String getId() {
             return "cppunit";
         }
-
     }
 }

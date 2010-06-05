@@ -1,17 +1,15 @@
 package hudson.plugins.cppunit;
 
+import com.thalesgroup.hudson.library.tusarconversion.ConversionUtil;
+import com.thalesgroup.hudson.library.tusarconversion.exception.ConversionException;
+import com.thalesgroup.hudson.library.tusarconversion.model.InputType;
 import com.thalesgroup.hudson.plugins.xunit.types.XUnitType;
 import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.Transform;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.xml.sax.InputSource;
+import org.junit.Assert;
 import org.xml.sax.SAXException;
 
-import javax.xml.transform.TransformerException;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-
-import static org.junit.Assert.assertTrue;
+import java.io.*;
 
 
 public class AbstractXUnitXSLTest {
@@ -30,21 +28,28 @@ public class AbstractXUnitXSLTest {
     }
 
 
-    protected void processTransformation(String source, String target)
-            throws IllegalAccessException, InstantiationException, IOException, TransformerException, SAXException {
+    protected void conversion(InputType type, String inputPath, String resultPath) throws ConversionException, IOException, SAXException {
 
+        // define the streams (input/output)
+        InputStream inputStream = this.getClass().getResourceAsStream(inputPath);
 
-        try {
-            Constructor typeContructor = type.getConstructors()[0];
-            Transform myTransform = new Transform(new InputSource(
-                    type.getResourceAsStream(source)), new InputSource(type.getResourceAsStream(((XUnitType) typeContructor.newInstance("default", true, true)).getXsl())));
-            Diff myDiff = new Diff(XUnitXSLUtil.readXmlAsString(target), myTransform);
-            assertTrue("XSL transformation did not work" + myDiff, myDiff.similar());
+        File target = File.createTempFile("result", "xml");
+        OutputStream outputStream = new FileOutputStream(target);
 
-        } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            assertTrue(false);
-        }
+        // convert the input xml file
+        ConversionUtil.convert(type, inputStream, outputStream);
+
+        // compare with expected result
+        InputStream expectedResult = this.getClass().getResourceAsStream(resultPath);
+        InputStream fisTarget = new FileInputStream(target);
+
+        Diff myDiff = new Diff(XUnitXSLUtil.readXmlAsString(expectedResult), XUnitXSLUtil.readXmlAsString(fisTarget));
+
+        Assert.assertTrue("XSL transformation did not work" + myDiff, myDiff.similar());
+
+        fisTarget.close();
+
     }
+
 
 }
