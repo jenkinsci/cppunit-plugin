@@ -1,5 +1,7 @@
 package hudson.plugins.cppunit;
 
+import com.thalesgroup.dtkit.metrics.hudson.api.type.TestType;
+import com.thalesgroup.hudson.plugins.xunit.XUnitPublisher;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
 
@@ -11,7 +13,7 @@ public class CppUnitPublisher extends Recorder implements Serializable {
 
     private String testResultsPattern = null;
 
-    private boolean useWorkspaceBaseDir = false;
+    private transient boolean useWorkspaceBaseDir = false;
 
     public String getTestResultsPattern() {
         return testResultsPattern;
@@ -24,4 +26,9 @@ public class CppUnitPublisher extends Recorder implements Serializable {
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
     }
+
+    private Object readResolve() {
+        return new XUnitPublisher(new TestType[]{new CppUnitPluginType(testResultsPattern, false, true)});
+    }
+
 }
