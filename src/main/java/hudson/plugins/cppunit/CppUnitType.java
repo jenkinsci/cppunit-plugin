@@ -1,42 +1,33 @@
 package hudson.plugins.cppunit;
 
 
+import com.thalesgroup.dtkit.metrics.hudson.api.descriptor.TestTypeDescriptor;
 import com.thalesgroup.hudson.plugins.xunit.types.XUnitType;
-import com.thalesgroup.hudson.plugins.xunit.types.XUnitTypeDescriptor;
-import com.thalesgroup.hudson.library.tusarconversion.TestsTools;
-import hudson.Extension;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * CppUnit Type
  *
  * @author Gregory Boissinot
  */
+@SuppressWarnings("unused")
 public class CppUnitType extends XUnitType {
 
-    @DataBoundConstructor
     public CppUnitType(String pattern, boolean faildedIfNotNew, boolean deleteJUnitFiles) {
-        super(TestsTools.CPPUNIT, pattern, faildedIfNotNew, deleteJUnitFiles);
+        super(pattern, faildedIfNotNew, deleteJUnitFiles);
     }
 
-    public XUnitTypeDescriptor<?> getDescriptor() {
-        return new CppUnitType.DescriptorImpl();
+    public TestTypeDescriptor getDescriptor() {
+        return null;
     }
 
-    @Extension
-    public static class DescriptorImpl extends XUnitTypeDescriptor<CppUnitType> {
-
-        public DescriptorImpl() {
-            super(CppUnitType.class);
-        }
-
-        @Override
-        public String getDisplayName() {
-            return TestsTools.CPPUNIT.getLabel();
-        }
-
-        public String getId() {
-            return "cppunit";
-        }
+    /**
+     * Call at Hudson startup for backward compatibility
+     *
+     * @return an new hudson object
+     */
+    public Object readResolve() {
+        return new CppUnitPluginType(this.getPattern(), this.isFaildedIfNotNew(), this.isDeleteJUnitFiles());
     }
+
+
 }

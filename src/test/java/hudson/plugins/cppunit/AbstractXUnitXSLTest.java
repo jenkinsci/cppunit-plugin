@@ -1,26 +1,18 @@
 package hudson.plugins.cppunit;
 
-import com.thalesgroup.hudson.library.tusarconversion.ConversionUtil;
-import com.thalesgroup.hudson.library.tusarconversion.exception.ConversionException;
-import com.thalesgroup.hudson.library.tusarconversion.model.InputType;
-import com.thalesgroup.hudson.plugins.xunit.types.XUnitType;
+
+import com.thalesgroup.dtkit.metrics.api.InputMetricXSL;
+import com.thalesgroup.dtkit.util.converter.ConvertUtil;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Assert;
-import org.xml.sax.SAXException;
+import org.junit.Before;
 
-import java.io.*;
-
+import java.io.File;
 
 public class AbstractXUnitXSLTest {
 
-    private Class<? extends XUnitType> type;
-
-    protected AbstractXUnitXSLTest(Class<? extends XUnitType> type) {
-        this.type = type;
-        setUp();
-    }
-
+    @Before
     public void setUp() {
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setNormalizeWhitespace(true);
@@ -28,27 +20,22 @@ public class AbstractXUnitXSLTest {
     }
 
 
-    protected void conversion(InputType type, String inputPath, String resultPath) throws ConversionException, IOException, SAXException {
+    public void convertAndValidate(Class<? extends InputMetricXSL> classType, String inputXMLPath, String expectedResultPath) throws Exception {
+        InputMetricXSL inputMetricXSL = classType.newInstance();
+        File outputXMLFile = File.createTempFile("result", "xml");
+        File inputXMLFile = new File(this.getClass().getResource(inputXMLPath).toURI());
 
-        // define the streams (input/output)
-        InputStream inputStream = this.getClass().getResourceAsStream(inputPath);
+        //The input file must be valid
+        Assert.assertTrue(inputMetricXSL.validateInputFile(inputXMLFile));
 
-        File target = File.createTempFile("result", "xml");
-        OutputStream outputStream = new FileOutputStream(target);
-
-        // convert the input xml file
-        ConversionUtil.convert(type, inputStream, outputStream);
-
-        // compare with expected result
-        InputStream expectedResult = this.getClass().getResourceAsStream(resultPath);
-        InputStream fisTarget = new FileInputStream(target);
-
-        Diff myDiff = new Diff(XUnitXSLUtil.readXmlAsString(expectedResult), XUnitXSLUtil.readXmlAsString(fisTarget));
-
+        ConvertUtil.convert(inputMetricXSL.getClass(), inputMetricXSL.getXslName(), inputXMLFile, outputXMLFile);
+        Diff myDiff = new Diff(XSLUtil.readXmlAsString(new File(this.getClass().getResource(expectedResultPath).toURI())), XSLUtil.readXmlAsString(outputXMLFile));
         Assert.assertTrue("XSL transformation did not work" + myDiff, myDiff.similar());
 
-        fisTarget.close();
+        //The generated output file must be valid
+        Assert.assertTrue(inputMetricXSL.validateOutputFile(outputXMLFile));
 
+        outputXMLFile.deleteOnExit();
     }
 
 
