@@ -10,7 +10,7 @@
       <xs:sequence>
         <xs:element ref="Name" minOccurs="1" maxOccurs="1"/>
         <xs:element ref="FailureType" minOccurs="1" maxOccurs="1"/>
-        <xs:element ref="Location" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="Location" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="Message" minOccurs="1" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="id" type="xs:integer" use="required" />
