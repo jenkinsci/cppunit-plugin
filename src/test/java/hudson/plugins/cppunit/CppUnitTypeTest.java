@@ -1,12 +1,11 @@
 package hudson.plugins.cppunit;
 
-import com.thalesgroup.dtkit.metrics.api.InputMetric;
+import com.thalesgroup.dtkit.metrics.model.InputMetric;
 import org.junit.Assert;
 import org.junit.Test;
+import static org.mockito.Mockito.anyString;
 
 import java.lang.reflect.Method;
-
-import static org.mockito.Mockito.anyString;
 
 public class CppUnitTypeTest {
 
