@@ -29,8 +29,8 @@ public class CppUnitInputMetric extends InputMetricXSL {
     }
 
     @Override
-    public String getInputXsd() {
-        return "cppunit-1.0.xsd";
+    public String[] getInputXsdNameList() {
+        return new String[]{"cppunit-1.0.xsd"};
     }
 
 
