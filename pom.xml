@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>cppunit</artifactId>
-    <version>1.10</version>
+    <version>1.11-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Hudson cppunit plugin</name>
     <url>http://wiki.hudson-ci.org/display/HUDSON/CppUnit+Plugin</url>
@@ -65,10 +65,10 @@
     </developers>
 
     <scm>
-        <connection>scm:svn:https://gbois@svn.java.net/svn/hudson~svn/tags/cppunit-1.10</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/tags/cppunit-1.10
+        <connection>scm:svn:https://gbois@svn.java.net/svn/hudson~svn/trunk/hudson/plugins/cppunit</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/cppunit
         </developerConnection>
-      <url>https://hudson.dev.java.net/source/browse/hudson/tags/cppunit-1.10</url>
+      <url>https://hudson.dev.java.net/source/browse/hudson/trunk/hudson/plugins/cppunit</url>
   </scm>
 
     <build>
